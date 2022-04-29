@@ -1,38 +1,6 @@
 /**
- * fetch the data
- * @param {*} container where the list gets rendered
+ * @module virtual-scrolling virtual-scrolling module
  */
-const fetchData = ( container) => {
-  fetch(`https://jsonplaceholder.typicode.com/posts/`)
-  .then(response => response.json())
-  .then(data => initVirtualScrolling(data, container))
-}
-
-/**
- * initialize virtual scrolling
- * @param {*} data for the list
- * @param {*} container where the list gets rendered
- */
-const initVirtualScrolling = (data, container) => {
-  //Init Virtual Scroll
-  const virtualScrolling = VirtualScroll(container.clientHeight, data.length, 18, 2);
-
-  //Init viewPort and set height of total elements
-  const viewPortContainer = document.createElement('DIV');
-  viewPortContainer.style.height = `${virtualScrolling.totalContentHeight}px`;
-
-  //add scrolling container and append viewPort and scrollingContainer to container
-  const scrollingContainer = document.createElement('DIV');
-  viewPortContainer.appendChild(scrollingContainer);
-  container.appendChild(viewPortContainer);
-
-  renderList(data, scrollingContainer, virtualScrolling.getCurrentFirstVirtualItem(container.scrollTop), virtualScrolling.getCurrentLastVirtualItem);
-  
-  //add event listener to container scroll and rerender list when its triggered
-  container.addEventListener('scroll', scrollEvent => {
-    renderList(data, scrollingContainer, virtualScrolling.getCurrentFirstVirtualItem(scrollEvent.target.scrollTop), virtualScrolling.getCurrentLastVirtualItem); 
-    virtualScrolling.shiftNodes(scrollingContainer);});
-}
 
 /**
  * VirtualScroll
@@ -41,59 +9,80 @@ const initVirtualScrolling = (data, container) => {
  * @param {number} totalItems 
  * @param {number} rowHeight in px
  * @param {number} nodePadding amount of elements rendered outside of the viewport
+ * @param {function} rowTemplate function which renderes a row and returns an element
  * @returns 
  */
-const VirtualScroll = (viewPortHeight, totalItems, rowHeight, nodePadding) => {
+export const VirtualScroll = (container, rowHeight, nodePadding, data, rowTemplate) => {
+  /**Height from main container */
+  const containerHeight = container.clientHeight;
   /**calculated total height of list*/
-  const totalContentHeight = totalItems * rowHeight;
+  const totalContentHeight = data.length * rowHeight;
+  /**total visible items calculated*/
+  const totalVisibleItems = containerHeight / rowHeight + (2 * nodePadding);
+  /**total elements */
+  const totalElements = data.length;
   /**the index of the current first rendered item in the list */
   let firstVirtualItem = 0;
-  /**total visible items calculated*/
-  const totalVisibleItems = viewPortHeight / rowHeight + (2 * nodePadding);
   /**offset to translate scroll container*/
   let offsetY = rowHeight * firstVirtualItem;
+
+
+
 
   /**
    * Method calculates the first rendered item and return the index
    * @param {number} scrollTop
    * @returns {number} index of first item
    */
-  const getCurrentFirstVirtualItem = (scrollTop) => {
+  const setCurrentFirstVirtualItem = (scrollTop) => {
     firstVirtualItem = Math.floor(scrollTop / rowHeight) - nodePadding;
     firstVirtualItem = Math.max(0, firstVirtualItem);
     offsetY = rowHeight * firstVirtualItem;
-    return firstVirtualItem;
   };
 
+  
   /**
    * transforms scrolling container after rerendering the list
    * @param {*} scrollingContainer
    */
-  const shiftNodes = (scrollingContainer) => scrollingContainer.style.transform = `translateY(${offsetY}px)`;
+   const shiftNodes = (scrollingContainer) => scrollingContainer.style.transform = `translateY(${offsetY}px)`;
+
+  /**
+ * Renders the list
+ * @param {*} listContainer 
+ */
+ const renderList = (scrollTop, listContainer) => {
+  setCurrentFirstVirtualItem(scrollTop);
+  //Clear container
+  listContainer.replaceChildren();
+  data.slice(firstVirtualItem, firstVirtualItem + totalElements).map(element => rowTemplate(element)).forEach((row) => {listContainer.appendChild(row)});
+}
+
+
+  const init = () => {
+   //Init viewPort and set height of total elements
+   const viewPortContainer = document.createElement('DIV');
+   viewPortContainer.style.height = `${totalContentHeight}px`;
+
+   //add scrolling container and append viewPort and scrollingContainer to container
+  const scrollingContainer = document.createElement('DIV');
+  viewPortContainer.appendChild(scrollingContainer);
+  container.appendChild(viewPortContainer);
+
+  renderList(0, scrollingContainer)
+
+    //add event listener to container scroll and rerender list when its triggered
+  container.addEventListener('scroll', scrollEvent => {
+    renderList(scrollEvent.target.scrollTop, scrollingContainer); 
+    shiftNodes(scrollingContainer)});
+  }
+
   return {
     totalContentHeight: totalContentHeight,
     totalVisibleItems: totalVisibleItems,
-    getCurrentFirstVirtualItem: getCurrentFirstVirtualItem,
-    getCurrentLastVirtualItem: firstVirtualItem + totalVisibleItems,
-    shiftNodes: shiftNodes
+    getCurrentFirstVirtualItem: setCurrentFirstVirtualItem,
+    renderList: renderList,
+    init: init
   }
 }
 
-/**
- * Renders the list
- * @param {Array} data of list
- * @param {*} listContainer 
- * @param {number} firstItem index of first item
- * @param {number} totalItems 
- */
-const renderList = (data, listContainer, firstItem, totalItems) => {
-  //Clear container
-  listContainer.replaceChildren();
-  data.slice(firstItem, firstItem + totalItems).forEach((element) => {
-    const li = document.createElement('LI');
-    const text = document.createElement('SPAN');
-    text.textContent = `${element.id}. ${element.title}`;
-    li.appendChild(text);
-    listContainer.appendChild(li)
-  })
-}
