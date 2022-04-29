@@ -13,14 +13,14 @@
  * @returns 
  */
 export const VirtualScroll = (container, rowHeight, nodePadding, data, rowTemplate) => {
-  /**Height from main container */
-  const containerHeight = container.clientHeight;
   /**calculated total height of list*/
   const totalContentHeight = data.length * rowHeight;
-  /**total visible items calculated*/
-  const totalVisibleItems = containerHeight / rowHeight + (2 * nodePadding);
   /**total elements */
   const totalElements = data.length;
+   /**Height from main container */
+   const containerHeight = container.clientHeight;
+  /**total visible items calculated*/
+  const totalVisibleItems = containerHeight / rowHeight + (2 * nodePadding);
   /**the index of the current first rendered item in the list */
   let firstVirtualItem = 0;
   /**offset to translate scroll container*/
@@ -42,21 +42,21 @@ export const VirtualScroll = (container, rowHeight, nodePadding, data, rowTempla
 
   
   /**
-   * transforms scrolling container after rerendering the list
-   * @param {*} scrollingContainer
-   */
-   const shiftNodes = (scrollingContainer) => scrollingContainer.style.transform = `translateY(${offsetY}px)`;
+  * transforms scrolling container after rerendering the list
+  * @param {*} scrollingContainer
+  */
+  const shiftNodes = (scrollingContainer) => scrollingContainer.style.transform = `translateY(${offsetY}px)`;
 
   /**
- * Renders the list
- * @param {*} listContainer 
- */
- const renderList = (scrollTop, listContainer) => {
-  setCurrentFirstVirtualItem(scrollTop);
-  //Clear container
-  listContainer.replaceChildren();
-  data.slice(firstVirtualItem, firstVirtualItem + totalElements).map(element => rowTemplate(element)).forEach((row) => {listContainer.appendChild(row)});
-}
+   * Renders the list
+   * @param {*} listContainer 
+   */
+  const renderList = (scrollTop, listContainer) => {
+    setCurrentFirstVirtualItem(scrollTop);
+    //Clear container
+    listContainer.replaceChildren();
+    data.slice(firstVirtualItem, firstVirtualItem + totalVisibleItems).map(element => rowTemplate(element)).forEach((row) => {listContainer.appendChild(row)});
+  }
 
 
   const init = () => {
@@ -78,10 +78,6 @@ export const VirtualScroll = (container, rowHeight, nodePadding, data, rowTempla
   }
 
   return {
-    totalContentHeight: totalContentHeight,
-    totalVisibleItems: totalVisibleItems,
-    getCurrentFirstVirtualItem: setCurrentFirstVirtualItem,
-    renderList: renderList,
     init: init
   }
 }
