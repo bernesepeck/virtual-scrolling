@@ -5,18 +5,16 @@
 /**
  * VirtualScroll
  * This method returns an object with all the necassary attribute and methods for virtual scrolling
- * @param {number} viewPortHeight in px
- * @param {number} totalItems 
+ * @param {*} container of the list
  * @param {number} rowHeight in px
  * @param {number} nodePadding amount of elements rendered outside of the viewport
+ * @param {data} data the data of the list
  * @param {function} rowTemplate function which renderes a row and returns an element
  * @returns 
  */
 export const VirtualScroll = (container, rowHeight, nodePadding, data, rowTemplate) => {
   /**calculated total height of list*/
   const totalContentHeight = data.length * rowHeight;
-  /**total elements */
-  const totalElements = data.length;
    /**Height from main container */
    const containerHeight = container.clientHeight;
   /**total visible items calculated*/
@@ -32,7 +30,6 @@ export const VirtualScroll = (container, rowHeight, nodePadding, data, rowTempla
   /**
    * Method calculates the first rendered item and return the index
    * @param {number} scrollTop
-   * @returns {number} index of first item
    */
   const setCurrentFirstVirtualItem = (scrollTop) => {
     firstVirtualItem = Math.floor(scrollTop / rowHeight) - nodePadding;
@@ -49,6 +46,7 @@ export const VirtualScroll = (container, rowHeight, nodePadding, data, rowTempla
 
   /**
    * Renders the list
+   * @param {number} scrollTop 
    * @param {*} listContainer 
    */
   const renderList = (scrollTop, listContainer) => {
@@ -59,6 +57,9 @@ export const VirtualScroll = (container, rowHeight, nodePadding, data, rowTempla
   }
 
 
+  /**
+   * Initialize the virtual scrolling
+   */
   const init = () => {
    //Init viewPort and set height of total elements
    const viewPortContainer = document.createElement('DIV');
