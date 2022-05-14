@@ -1,4 +1,4 @@
-import { VirtualScrollController, VirtualScrollView } from './virtual-scrolling.js';
+import { VirtualScrollController, VirtualScrollView, RowCounterView } from './virtual-scrolling.js';
 
 /**
  * initialize virtual scrolling
@@ -17,6 +17,7 @@ const initVirtualScrolling = (data, container) => {
   //Init Virtual Scroll
   const virtualScrollController = VirtualScrollController(container.clientHeight, 18, 2, data);
   VirtualScrollView(container, virtualScrollController, rowTemplate);
+  RowCounterView(virtualScrollController, container);
 }
 /**
  * fetch the data
